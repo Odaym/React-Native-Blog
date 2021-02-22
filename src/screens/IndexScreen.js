@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,20 @@ import { Context } from "../context/BlogContext";
 import { Feather } from "@expo/vector-icons";
 
 const IndexScreen = ({ navigation }) => {
-  const { state, deleteBlogPost } = useContext(Context);
+  const { state, getBlogPosts, deleteBlogPost } = useContext(Context);
+
+  useEffect(() => {
+    // Always save the listener and dispose of it, dangling memory, for some reason...
+    const listener = navigation.addListener("didFocus", () => {
+      getBlogPosts();
+    });
+
+    // This function will only be run if IndexScreen is destroyed
+    // Good place to clean up after this component
+    return () => {
+      listener.remove();
+    };
+  }, []);
 
   return (
     <View>
@@ -29,6 +42,7 @@ const IndexScreen = ({ navigation }) => {
                 <TouchableOpacity
                   onPress={() => {
                     deleteBlogPost(item.id);
+                    getBlogPosts();
                   }}
                 >
                   <Feather
